@@ -63,7 +63,35 @@ while True:
                 print(key, ":", count[key])
 
     elif choice == "3":
-        print("Coming soon")
+        if len(ips) == 0:
+            print("Please load the file first(option 1)")
+        else:
+            print("Top IPs")
+            ips_counts = {}
+            for key in ips:
+                if key in ips_counts:
+                    ips_counts[key] = ips_counts[key] + 1
+                else:
+                    ips_counts[key] = 1
+
+            order = sorted(ips_counts, key=ips_counts.get, reverse=True)
+            top = order[:5]
+            for key in top:
+                print(key, ":", ips_counts[key])
+
+            print("Top Endpoints")
+            ep_counts = {}
+            for key in endpoints:
+                if key in ep_counts:
+                    ep_counts[key] = ep_counts[key] + 1
+                else:
+                    ep_counts[key] = 1
+            
+            order = sorted(ep_counts, key=ep_counts.get, reverse=True)
+            top = order[:5]
+            for key in top:
+                print(key, ":", ep_counts[key])
+
     elif choice == "4":
         print("Coming soon")
     elif choice == "5":
