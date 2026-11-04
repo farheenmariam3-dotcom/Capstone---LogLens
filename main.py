@@ -18,6 +18,13 @@ while True:
 
     if choice == "1":
         skipped = 0
+        dates.clear()
+        times.clear()
+        ips.clear()
+        endpoints.clear()
+        statuses.clear()
+        response_times.clear()  
+
         file = open("server.log", "r")
         for line in file:
             line = line.strip()
@@ -42,7 +49,19 @@ while True:
         print("Loaded: ", len(ips), "lines, skipped", skipped)
 
     elif choice == "2":
-        print("Coming soon")
+        if len(statuses) == 0:
+            print("please load the file first(option 1)")
+        else: 
+            count = {} 
+            for key in statuses:
+                if key in count:
+                    count[key] = count[key] + 1
+                else:
+                    count[key] = 1
+
+            for key in count:
+                print(key, ":", count[key])
+
     elif choice == "3":
         print("Coming soon")
     elif choice == "4":
