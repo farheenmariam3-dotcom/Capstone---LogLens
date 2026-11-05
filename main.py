@@ -93,9 +93,45 @@ while True:
                 print(key, ":", ep_counts[key])
 
     elif choice == "4":
-        print("Coming soon")
+        if len(statuses) == 0:
+            print("Please load the file first(option 1)")
+        else:
+            errors = [0] * 24
+            for i in range(len(statuses)):
+                if statuses[i] >= 400:
+                    hour = int(times[i][0:2])
+                    errors[hour] = errors[hour] + 1
+
+            print("Errors per hour")
+            for h in range(24):
+                if errors[h] > 0:
+                    print(h, ":00 -", errors[h], "errors")        
+
     elif choice == "5":
-        print("Coming soon")
+        if len(endpoints) == 0:
+            print("Please load the file first (option 1)")
+        else:
+            total = {}
+            num = {}
+            for i in range(len(endpoints)):
+                ep = endpoints[i]
+                rt = response_times[i]
+                if ep in total:
+                    total[ep] = total[ep] + rt
+                    num[ep] = num[ep] + 1
+                else:
+                    total[ep] = rt
+                    num[ep] = 1
+
+            avg = {}
+            for ep in total:
+                avg[ep] = total[ep] / num[ep]
+
+            order = sorted(avg, key=avg.get, reverse = True)
+            print("Slowest endpoints (average response time)")
+            for ep in order:
+                print(ep, ":", round(avg[ep]), "ms")
+
     elif choice == "6":
         print("Coming soon")
     elif choice == "7":
