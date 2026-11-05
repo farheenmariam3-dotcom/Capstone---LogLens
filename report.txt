@@ -1,0 +1,11 @@
+LogLens Report
+Lines loaded: 11
+
+Requests by status code
+401 : 5
+200 : 4
+500 : 1
+404 : 1
+
+Suspicious IPs
+192.168.1.10 : 5 failed logins
