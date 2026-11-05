@@ -1,3 +1,6 @@
+start_hour = 0
+end_hour = 23
+
 dates = []
 times = []
 ips = []
@@ -13,8 +16,11 @@ while True:
     print("4. Errors per hour")
     print("5. Slowest endpoints")
     print("6. Suspicious IPs")
-    print("7. Exit")
-    choice = input("Pick a number from 1-7: ")
+    print("7. Set time window")
+    print("8. Save report")
+    print("9. Exit")
+    choice = input("Pick a number from 1-9: ")
+    
 
     if choice == "1":
         skipped = 0
@@ -25,28 +31,35 @@ while True:
         statuses.clear()
         response_times.clear()  
 
-        file = open("server.log", "r")
-        for line in file:
-            line = line.strip()
-            parts = line.split()
+        try:
+            file = open("server.log", "r")
+            for line in file:
+                line = line.strip()
+                parts = line.split()
 
-            if len(parts) != 6:
-                skipped = skipped + 1
-                continue
+                if len(parts) != 6:
+                    skipped = skipped + 1
+                    continue
 
-            if not parts[4].isdigit() or not parts[5].isdigit():
-                skipped = skipped + 1
-                continue
+                if not parts[4].isdigit() or not parts[5].isdigit():
+                    skipped = skipped + 1
+                    continue
 
-            dates.append(parts[0])
-            times.append(parts[1])
-            ips.append(parts[2])
-            endpoints.append(parts[3])
-            statuses.append(int(parts[4]))
-            response_times.append(int(parts[5]))
-        
-        file.close()
-        print("Loaded: ", len(ips), "lines, skipped", skipped)
+                hour = int(parts[1][0:2])          
+                if hour < start_hour or hour > end_hour: 
+                    continue 
+
+                dates.append(parts[0])
+                times.append(parts[1])
+                ips.append(parts[2])
+                endpoints.append(parts[3])
+                statuses.append(int(parts[4]))
+                response_times.append(int(parts[5]))
+            
+            file.close()
+            print("Loaded: ", len(ips), "lines, skipped", skipped)
+        except FileNotFoundError:
+            print("File not found: server.log")
 
     elif choice == "2":
         if len(statuses) == 0:
@@ -133,8 +146,77 @@ while True:
                 print(ep, ":", round(avg[ep]), "ms")
 
     elif choice == "6":
-        print("Coming soon")
+        if len(ips) == 0:
+            print("Please load the file first (option 1)")
+        else:
+            fails = {}
+            for i in range(len(ips)):
+                if statuses[i] == 401:
+                    ip = ips[i]
+                    if ip in fails:
+                        fails[ip] = fails[ip] + 1
+                    else:
+                        fails[ip] = 1
+            
+            found = False
+            print("Suspicious IPs (5 or more failed logins)")
+            for ip in fails:
+                if fails[ip] >= 5:
+                    print("WARNING:", ip, "has", fails[ip], "failed logins - possible brute force attack")
+                    found = True
+
+            if found == False:
+                print("No suspicious IPs found")
+        
     elif choice == "7":
+        s = input("Start hour (0-23)")
+        e = input("End hour (0-23)")
+        if not s.isdigit() or not e.isdigit():
+            print("Please enter numbers only")
+        elif int(s) > 23 or int(e) > 23:
+            print("Hours must be between 0 - 23 only")
+        elif int(s) > int(e):
+            print("Start hour must be before an hour")
+        else:
+            start_hour = int(s)
+            end_hour = int(e)
+            print("Time window set. Now load the file again (option 1)")
+
+    elif choice == "8":
+        if len(ips) == 0:
+            print("Please load the file first (option 1)")
+        else:
+            report = open("report.txt", "w")
+            report.write("LogLens Report\n")
+            report.write("Lines loaded: " + str(len(ips)) + "\n\n")
+
+            report.write("Requests by status code\n")
+            count = {}
+            for key in statuses:
+                if key in count:
+                    count[key] = count[key] + 1
+                else:
+                    count[key] = 1
+            for key in count:
+                report.write(str(key) + " : " + str(count[key]) + "\n")
+
+            report.write("\nSuspicious IPs\n")
+            fails = {}
+            for i in range(len(ips)):
+                if statuses[i] == 401:
+                    ip = ips[i]
+                    if ip in fails:
+                        fails[ip] = fails[ip] + 1
+                    else:
+                        fails[ip] = 1
+            for ip in fails:
+                if fails[ip] >= 5:
+                    report.write(ip + " : " + str(fails[ip]) + " failed logins\n")
+
+            report.close()
+            print("Report saved to report.txt")
+
+    elif choice == "9":
         print("Goodbye")
         break
     else:
